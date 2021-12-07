@@ -13,7 +13,6 @@
 #include <chrono> 
 #include <filesystem>
 #include <cassert>
-#include "Source.h"
 
 
 using namespace std;
@@ -149,19 +148,20 @@ typedef vector<Layer_t> DecisionDiagram_t;
 /// <param name="Decision_diagram_layer"></param>
 /// <param name="centroid"></param>
 void recompute_cluster_centroid(const vector<size_t>& cluster, const Layer_t& Decision_diagram_layer, State_t& centroid) {
-  unordered_map<size_t, size_t> counting_map;
+  //unordered_map<size_t, size_t> counting_map;
   centroid.residual_capacity = 0;
   for (const size_t& item : cluster) {
-    for (const auto& item_free : Decision_diagram_layer[item].node_state.free_items) {
+    /*for (const auto& item_free : Decision_diagram_layer[item].node_state.free_items) {
       if (!counting_map.count(item_free)) counting_map[item_free] = 1;
       else ++counting_map[item_free];
-    }
-    centroid.residual_capacity += Decision_diagram_layer[item].node_state.residual_capacity;
+    }*/
+    centroid.free_items.insert(Decision_diagram_layer[item].node_state.free_items.begin(), Decision_diagram_layer[item].node_state.free_items.end()));
+    centroid.residual_capacity = max(Decision_diagram_layer[item].node_state.residual_capacity, centroid.residual_capacity); //was +=
   }
-  centroid.residual_capacity /= cluster.size();
-  for (const auto& item : counting_map) {
-    if (item.second > cluster.size() / 2) centroid.free_items.insert(item.first);
-  }
+  //centroid.residual_capacity /= cluster.size();
+  /*for (const auto& item : counting_map) {
+    //if (item.second > cluster.size() / 2) centroid.free_items.insert(item.first);
+  }*/
 }
 
 /// <summary>
@@ -239,7 +239,7 @@ void kmeans_alg(Layer_t& Decision_diagram_layer, const size_t& k, vector<vector<
   }
   init_centroids(distances_cache, Decision_diagram_layer, centroids, k);
   assign_vecors_to_clusters(clusters, Decision_diagram_layer, centroids, distances_cache);
-  int i = 10;
+  int i = 10; 
   while (clusterize_vectors(distances_cache, clusters, Decision_diagram_layer, centroids) && --i > 0);
 }
 
